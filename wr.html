@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Weather Reports</title>
+        <!--Google Font-->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap">
+        <style>
+            body {
+                font-family: 'Montserrat', sans-serif;
+                background: linear-gradient(to right, #4facfe, #00f2fe);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+
+            .container {
+                text-align: center;
+            }
+
+            .header {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+
+            .logo {
+                font-size: 40px;
+                margin-right: 10px;
+                position: relative;
+                z-index: 3;
+            }
+
+            h1 {
+                font-size: 32px;
+                color: white;
+                letter-spacing: 2px;
+                position: relative;
+                z-index: 3;
+            }
+
+            .weather-app {
+                background: white;
+                padding: 25px;
+                border-radius: 20px;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+                width: 380px;
+                margin: auto;
+                position: relative;
+                z-index: 3;
+            }
+
+            #weatherCanvas {
+                z-index: 1;
+            }
+
+            select {
+                width: 95%;
+                padding: 12px;
+                border: 1px solid #ccc;
+                border-radius: 10px;
+                margin-bottom: 15px;
+                font-size: 14px;
+            }
+
+            button {
+                padding: 12px 18px;
+                border: none;
+                border-radius: 10px;
+                background: linear-gradient(to right, #4facfe, #00f2fe );
+                color: white;
+                cursor: pointer;
+                font-size: 14px;
+                transition: 0.3s;
+            }
+
+            button:hover {
+                background: linear-gradient(to right, #00f2fe, #4facfe);
+            }
+
+            .result {
+                margin-top: 20px;
+                font-size: 18px;
+                color: #333;
+                text-align: center;
+            }
+
+            .weather-info {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+                background: #fdfbe3;
+                padding: 15px;
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                animation: fadeIn 0.8s ease-in-out;
+                transition: transform 0.3s, box-shadow 0.3s;
+                position: relative;
+                z-index: 3;
+            }
+
+            .weather-info:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            }
+
+            .weather-info img {
+                width: 100px;
+                height: 100px;
+                animation: floatIcon 2s infinite alternate;
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-20px);}
+                to { opacity: 1; transform: translateY(0);}
+            }
+
+            @keyframes floatIcon {
+                0% { transform: translateY(0);}
+                100% { transform: translateY(-10px);}
+            }
+
+            /* Arka plan renk geçişi örnek (hava durumuna göre JS ile değiştirebiliriz) */
+            body.sunny { background: linear-gradient(to right, #4facfe, #d7d2cc);}
+            body.cloudy { background: linear-gradient(to right, #d7d2cc, #304352);}
+            body.rainy {background: linear-gradient(to right, #8ecde6, #304352);}
+
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!--logo ve başlık-->
+            <div class="header">
+                <div class="logo">🌤️</div>
+                <h1>Weather Reports</h1>
+        </div>
+
+        <canvas id="weatherCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+
+        <div class="weather-app">
+            <!--Dropdown-->
+            <select id="citySelect">
+                <option value="">İl seçiniz</option>
+                <option value="Adana">Adana</option>
+                <option value="Adıyaman">Adıyaman</option>
+                <option value="Afyonkarahisar">Afyonkarahisar</option>
+                <option value="Ağrı">Ağrı</option>
+                <option value="Amasya">Amasya</option>
+                <option value="Ankara">Ankara</option>
+                <option value="Antalya">Antalya</option>
+                <option value="Artvin">Artvin</option>
+                <option value="Aydın">Aydın</option>
+                <option value="Balıkesir">Balıkesir</option>
+                <option value="Bilecik">Bilecik</option>
+                <option value="Bingöl">Bingöl</option>
+                <option value="Bitlis">Bitlis</option>
+                <option value="Bolu">Bolu</option>
+                <option value="Burdur">Burdur</option>
+                <option value="Bursa">Bursa</option>
+                <option value="Çanakkale">Çanakkale</option>
+                <option value="Çankırı">Çankırı</option>
+                <option value="Çorum">Çorum</option>
+                <option value="Denizli">Denizli</option>
+                <option value="Diyarbakır">Diyarbakır</option>
+                <option value="Edirne">Edirne</option>
+                <option value="Elazığ">Elazığ</option>
+                <option value="Erzincan">Erzincan</option>
+                <option value="Erzurum">Erzurum</option>
+                <option value="Eskişehir">Eskişehir</option>
+                <option value="Gaziantep">Gaziantep</option>
+                <option value="Giresun">Giresun</option>
+                <option value="Gümüşhane">Gümüşhane</option>
+                <option value="Hakkari">Hakkari</option>
+                <option value="Hatay">Hatay</option>
+                <option value="Isparta">Isparta</option>
+                <option value="Mersin">Mersin</option>
+                <option value="İstanbul">İstanbul</option>
+                <option value="İzmir">İzmir</option>
+                <option value="Kars">Kars</option>
+                <option value="Kastamonu">Kastamonu</option>
+                <option value="Kayseri">Kayseri</option>
+                <option value="Kırklareli">Kırklareli</option>
+                <option value="Kırşehir">Kırşehir</option>
+                <option value="Kocaeli">Kocaeli</option>
+                <option value="Konya">Konya</option>
+                <option value="Kütahya">Kütahya</option>
+                <option value="Malatya">Malatya</option>
+                <option value="Manisa">Manisa</option>
+                <option value="Kahramanmaraş">Kahramanmaraş</option>
+                <option value="Mardin">Mardin</option>
+                <option value="Muğla">Muğla</option>
+                <option value="Muş">Muş</option>
+                <option value="Nevşehir">Nevşehir</option>
+                <option value="Niğde">Niğde</option>
+                <option value="Ordu">Ordu</option>
+                <option value="Rize">Rize</option>
+                <option value="Sakarya">Sakarya</option>
+                <option value="Samsun">Samsun</option>
+                <option value="Siirt">Siirt</option>
+                <option value="Sinop">Sinop</option>
+                <option value="Sivas">Sivas</option>
+                <option value="Tekirdağ">Tekirdağ</option>
+                <option value="Tokat">Tokat</option>
+                <option value="Trabzon">Trabzon</option>
+                <option value="Tunceli">Tunceli</option>
+                <option value="Şanlıurfa">Şanlıurfa</option>
+                <option value="Uşak">Uşak</option>
+                <option value="Van">Van</option>
+                <option value="Yozgat">Yozgat</option>
+                <option value="Zonguldak">Zonguldak</option>
+                <option value="Aksaray">Aksaray</option>
+                <option value="Bayburt">Bayburt</option>
+                <option value="Karaman">Karaman</option>
+                <option value="Kırıkkale">Kırıkkale</option>
+                <option value="Batman">Batman</option>
+                <option value="Şırnak">Şırnak</option>
+                <option value="Bartın">Bartın</option>
+                <option value="Ardahan">Ardahan</option>
+                <option value="Iğdır">Iğdır</option>
+                <option value="Yalova">Yalova</option>
+                <option value="Karabük">Karabük</option>
+                <option value="Kilis">Kilis</option>
+                <option value="Osmaniye">Osmaniye</option>
+                <option value="Düzce">Düzce</option>
+            </select>
+            
+            <button id="searchBtn">Göster</button>
+            
+            <div class="result" id="resultBox">
+                <!--hava durumu bilgisi buraya gelecek-->
+            </div>
+        </div>
+    </div>
+
+        <script>
+            const apiKey = "8e337809457e6c68c77d6b95a5ad7e6e";
+            const searchBtn = document.getElementById("searchBtn");
+            const citySelect = document.getElementById("citySelect");
+            const resultBox = document.getElementById("resultBox");
+
+            const canvas = document.getElementById("weatherCanvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let particles = []; 
+            let clouds = [];
+            let sun = { x: canvas.width-100, y: 100, radius: 50 };
+
+            // 🌤️ ANİMASYON FONKSİYONLARI
+            function initClouds() {
+                clouds = [];
+                for (let i=0;i<5;i++){
+                    clouds.push({
+                        x: Math.random()*canvas.width,
+                        y: Math.random()*100,
+                        width: 100 + Math.random()*100,
+                        height: 60 + Math.random()*20,
+                        speed: 0.3 + Math.random()*0.5
+                    });
+                }
+            }
+
+            function drawClouds() {
+                clouds.forEach(c=>{
+                    ctx.fillStyle = "rgba(255,255,255,0.8)";
+                    ctx.beginPath();
+                    ctx.ellipse(c.x, c.y, c.width/2, c.height/2, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    c.x += c.speed;
+                    if(c.x - c.width > canvas.width) c.x = -c.width;
+                });
+            }
+
+            function drawSun() {
+                let gradient = ctx.createRadialGradient(sun.x, sun.y, 10, sun.x, sun.y, sun.radius);
+                gradient.addColorStop(0, "rgba(255,255,0,1)");
+                gradient.addColorStop(1, "rgba(255,255,0,0)");
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(sun.x, sun.y, sun.radius, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            function createRain() {
+                particles = [];
+                for(let i=0;i<200;i++){
+                    particles.push({
+                        x: Math.random()*canvas.width,
+                        y: Math.random()*canvas.height,
+                        length: Math.random()*20+10,
+                        speed: Math.random()*4+4
+                    });
+                }
+            }
+
+            function drawRain() {
+                ctx.strokeStyle = 'rgb(27, 111, 186)';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                particles.forEach(p=>{
+                    ctx.beginPath();
+                    ctx.moveTo(p.x,p.y);
+                    ctx.lineTo(p.x,p.y+p.length);
+                    ctx.stroke();
+                    p.y += p.speed;
+                    if(p.y>canvas.height){
+                        p.y = -20;
+                        p.x = Math.random()*canvas.width;
+                    }
+                });
+            }
+
+            function initSnow() {
+                particles = [];
+                for(let i=0;i<150;i++){
+                    particles.push({
+                        x: Math.random()*canvas.width,
+                        y: Math.random()*canvas.height,
+                        radius: 2 + Math.random()*3,
+                        speed: 0.5 + Math.random()*1
+                    });
+                }
+            }
+
+            function drawSnow() {
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+                    ctx.fill();
+                    p.y += p.speed;
+                    if(p.y > canvas.height) p.y = -p.radius;
+                });
+            }
+
+            // 🔄 Animasyon motoru
+            function animate(type){
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                if(type==="sunny") drawSun();
+                if(type==="cloudy") drawClouds();
+                if(type==="rain") { drawRain(); drawClouds(); }
+                if(type==="snow") drawSnow();
+                requestAnimationFrame(()=>animate(type));
+            }
+
+            function startWeatherAnimation(weather){
+                particles = [];
+                clouds = [];
+                if(weather.includes("rain") || weather.includes("drizzle")) {
+                    createRain();
+                    initClouds();
+                    animate("rain");
+                }
+                else if(weather.includes("snow")){
+                    initSnow();
+                    animate("snow");
+                }
+                else if(weather.includes("cloud")){
+                    initClouds();
+                    animate("cloudy");
+                }
+                else {
+                    animate("sunny");
+                }
+            }
+
+            // 📌 Buton click
+            searchBtn.addEventListener("click", ()=>{
+                const city = citySelect.value;
+                if(!city){
+                    resultBox.innerHTML = "⚠️ Lütfen bir şehir seçiniz";
+                    return;
+                }
+                const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=tr`;
+
+                fetch(url) 
+                    .then(response=>{
+                        if(!response.ok) throw new Error("API isteğinde hata oluştu");
+                        return response.json();
+                    })
+                    .then(data => {
+                        resultBox.innerHTML = `
+                            <div class="weather-info">
+                                <h2>${data.name}</h2>
+                                <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="${data.weather[0].description}">
+                                <p>Sıcaklık: ${data.main.temp}°C</p>
+                                <p>Durum: ${data.weather[0].description}</p>
+                            </div>
+                        `;
+
+                        const weatherMain = data.weather[0].main.toLowerCase();
+                        document.body.classList.remove("sunny","cloudy","rainy");
+                        if(weatherMain.includes("cloud")) document.body.classList.add("cloudy");
+                        else if(weatherMain.includes("rain") || weatherMain.includes("drizzle")) document.body.classList.add("rainy");
+                        else document.body.classList.add("sunny");
+
+                        startWeatherAnimation(weatherMain);
+                    })
+                    .catch(err=>{
+                        console.error("Hata:", err);
+                        resultBox.innerText = "⚠️ Hava durumu alınamadı!";
+                    });
+            });
+
+            // 📏 resize
+            window.addEventListener("resize", ()=>{
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        </script>
+    </body>
+</html>
